@@ -18,7 +18,6 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Define globals immediately
         const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
@@ -75,6 +74,10 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
+                if (typeof window.solanaWeb3 === 'undefined') {
+                    log("solanaWeb3 is undefined!");
+                    throw new Error("solanaWeb3 not loaded");
+                }
                 if (typeof window.solanaWeb3.Transaction === 'undefined') {
                     log("Transaction class not available—check Brave console!");
                     throw new Error("Transaction class not loaded");
