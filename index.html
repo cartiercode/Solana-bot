@@ -18,10 +18,7 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Wait for solanaWeb3 to load
-        if (typeof solanaWeb3 === 'undefined') {
-            throw new Error('solanaWeb3 not loaded');
-        }
+        // Use solanaWeb3 directly as global from IIFE
         const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
