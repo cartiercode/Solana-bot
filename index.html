@@ -18,10 +18,9 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Destructure solanaWeb3 correctly
-        const { Connection, PublicKey, Transaction, TransactionInstruction } = window.solanaWeb3;
-        const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
-        const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
+        // Use window.solanaWeb3 directly—no destructuring
+        const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -76,8 +75,12 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const transaction = new Transaction().add(
-                    new TransactionInstruction({
+                if (typeof window.solanaWeb3.Transaction === 'undefined') {
+                    log("Transaction class not available!");
+                    throw new Error("Transaction class not loaded");
+                }
+                const transaction = new window.solanaWeb3.Transaction().add(
+                    new window.solanaWeb3.TransactionInstruction({
                         keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
