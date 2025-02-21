@@ -45,10 +45,11 @@
 
                 log("Step 3: Initiating Phantom connection...");
                 const connectResult = await window.solana.connect();
-                log("Step 4: Connection result: " + (connectResult ? JSON.stringify(connectResult) : "null"));
+                log("Step 4: Connection result: " + JSON.stringify(connectResult));
 
-                log("Step 5: Setting wallet...");
-                wallet = window.solana;
+                log("Step 5: Setting wallet from connect result...");
+                wallet = connectResult; // Use connect() result directly
+                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
                 log("Step 6: Wallet set: " + (wallet ? "Yes" : "No"));
 
                 log("Step 7: Checking wallet properties...");
@@ -57,7 +58,7 @@
                     document.getElementById("runBtn").disabled = false;
                     log("Step 8: Wallet connected: " + wallet.publicKey.toString());
                 } else {
-                    log("Step 8: No publicKey in wallet object");
+                    log("Step 8: Wallet object lacks publicKey");
                 }
             } catch (err) {
                 log("Connection failed: " + err.message);
