@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solana Arbitrage Bot</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #logs { white-space: pre-wrap; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Solana Arbitrage Bot</h1>
+    <p>Status: <span id="status">{{ status }}</span></p>
+    <button onclick="startBot()">Start Bot</button>
+    <button onclick="stopBot()">Stop Bot</button>
+    <h2>Settings</h2>
+    <form id="settingsForm">
+        <label>Min Profit: <input type="number" step="0.001" name="min_profit" value="{{ bot.min_profit }}"></label><br>
+        <label>Trade Amount: <input type="number" step="0.01" name="amount" value="{{ bot.amount }}"></label><br>
+        <label>Slippage: <input type="number" step="0.1" name="slippage" value="{{ bot.slippage }}"></label><br>
+        <button type="submit">Update Settings</button>
+    </form>
+    <h2>Logs</h2>
+    <div id="logs"></div>
+
+    <script>
+        function updateStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => document.getElementById('status').innerText = data.status);
+        }
+
+        function updateLogs() {
+            fetch('/logs')
+                .then(response => response.json())
+                .then(data => document.getElementById('logs').innerText = data.logs || data.error);
+        }
+
+        function startBot() {
+            fetch('/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').innerText = data.status;
+                    alert(data.message);
+                });
+        }
+
+        function stopBot() {
+            fetch('/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').innerText = data.status;
+                    alert(data.message);
+                });
+        }
+
+        document.getElementById('settingsForm').onsubmit = function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const settings = Object.fromEntries(formData);
+            fetch('/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+                .then(response => response.json())
+                .then(data => alert(data.message));
+        };
+
+        setInterval(updateStatus, 5000);
+        setInterval(updateLogs, 5000);
+        updateLogs();
+    </script>
+</body>
+</html>
