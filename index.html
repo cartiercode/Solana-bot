@@ -18,14 +18,13 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Wait for solanaWeb3 with extended debug
         function waitForSolanaWeb3() {
             return new Promise((resolve) => {
                 log("Waiting for solanaWeb3 to load...");
                 let attempts = 0;
                 const checkInterval = setInterval(() => {
                     attempts++;
-                    if (typeof window.solanaWeb3 !== 'undefined') {
+                    if (typeof window.solanaWeb3 !== 'undefined' && typeof window.solanaWeb3.Transaction !== 'undefined') {
                         log(`solanaWeb3 loaded after ${attempts} attempts`);
                         clearInterval(checkInterval);
                         resolve(window.solanaWeb3);
@@ -35,15 +34,15 @@
                 }, 100);
                 setTimeout(() => {
                     clearInterval(checkInterval);
-                    log("solanaWeb3 load timeout after 10s—check Brave console/network!");
-                    resolve(null); // Fallback after 10s with null
+                    log("solanaWeb3 load timeout after 10s—check console/network!");
+                    resolve(null);
                 }, 10000);
             });
         }
 
         const solanaWeb3Promise = waitForSolanaWeb3();
         const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
-        const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
+        const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here");
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -98,10 +97,10 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const solanaWeb3 = await solanaWeb3Promise; // Wait for load
+                const solanaWeb3 = await solanaWeb3Promise;
                 log("solanaWeb3 loaded: " + (solanaWeb3 !== null ? "Yes" : "No"));
                 if (!solanaWeb3 || typeof solanaWeb3.Transaction === 'undefined') {
-                    log("Transaction class not available—check Brave console!");
+                    log("Transaction class not available—check console!");
                     throw new Error("Transaction class not loaded");
                 }
                 const transaction = new solanaWeb3.Transaction().add(
