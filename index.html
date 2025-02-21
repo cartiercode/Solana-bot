@@ -31,7 +31,7 @@
 
         async function connectWallet() {
             try {
-                log("Step 1: Checking Phantom availability...");
+                log("Step 1: Checking Phantom...");
                 if (typeof window.solana === 'undefined') {
                     log("No Solana provider—install Phantom!");
                     alert("Install Phantom Wallet!");
@@ -43,21 +43,29 @@
                     return;
                 }
 
-                log("Step 3: Connecting to Phantom...");
+                log("Step 3: Disconnecting any existing connection...");
+                if (window.solana.isConnected) {
+                    await window.solana.disconnect();
+                    log("Step 4: Disconnected existing session");
+                } else {
+                    log("Step 4: No existing connection to disconnect");
+                }
+
+                log("Step 5: Starting fresh connection...");
                 const connectResult = await window.solana.connect();
-                log("Step 4: Connect result: " + JSON.stringify(connectResult));
+                log("Step 6: Connect result: " + JSON.stringify(connectResult));
 
-                log("Step 5: Before setting wallet...");
-                wallet = window.solana; // Use window.solana, not connectResult
-                log("Step 6: After setting wallet: " + (wallet ? "Yes" : "No"));
+                log("Step 7: Assigning wallet...");
+                wallet = window.solana; // Use window.solana post-connect
+                log("Step 8: Wallet assigned: " + (wallet ? "Yes" : "No"));
 
-                log("Step 7: Checking wallet properties...");
+                log("Step 9: Checking wallet properties...");
                 if (wallet && wallet.publicKey) {
                     document.getElementById("wallet").innerText = wallet.publicKey.toString();
                     document.getElementById("runBtn").disabled = false;
-                    log("Step 8: Wallet connected: " + wallet.publicKey.toString());
+                    log("Step 10: Wallet connected: " + wallet.publicKey.toString());
                 } else {
-                    log("Step 8: No publicKey in wallet");
+                    log("Step 10: No publicKey in wallet");
                 }
             } catch (err) {
                 log("Connection failed: " + err.message + " (Code: " + (err.code || "Unknown") + ")");
