@@ -54,9 +54,7 @@
                 const connectResult = await window.solana.connect();
                 log("Step 6: Connect result: " + JSON.stringify(connectResult));
 
-                // Skip wallet assignment—use window.solana directly
                 log("Step 7: Skipping wallet var—using window.solana");
-
                 log("Step 8: Checking window.solana properties...");
                 if (window.solana && window.solana.publicKey) {
                     document.getElementById("wallet").innerText = window.solana.publicKey.toString();
@@ -77,8 +75,8 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const transaction = new Transaction().add(
-                    new TransactionInstruction({
+                const transaction = new solanaWeb3.Transaction().add(
+                    new solanaWeb3.TransactionInstruction({
                         keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
