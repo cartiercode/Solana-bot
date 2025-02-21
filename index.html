@@ -18,6 +18,8 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
+        // Explicitly declare solanaWeb3 from window
+        const solanaWeb3 = window.solanaWeb3; // IIFE loads it here
         const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
