@@ -12,11 +12,15 @@
     <h1>Solana Arbitrage dApp</h1>
     <p>Wallet: <span id="wallet">Not Connected</span></p>
     <button onclick="connectWallet()">Connect Wallet</button>
+    <button onclick="runArbitrage()" id="runBtn" disabled>Run Arbitrage</button>
     <h2>Logs</h2>
     <div id="logs"></div>
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
+        const { Connection, PublicKey, Transaction, TransactionInstruction } = solanaWeb3;
+        const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
         let wallet = null;
 
         function log(message) {
@@ -44,12 +48,44 @@
                 log("Wallet object set: " + (wallet ? "Yes" : "No"));
                 if (wallet && wallet.publicKey) {
                     document.getElementById("wallet").innerText = wallet.publicKey.toString();
+                    document.getElementById("runBtn").disabled = false;
                     log("Wallet connected: " + wallet.publicKey.toString());
                 } else {
                     log("Wallet connected but no public key found");
                 }
             } catch (err) {
                 log("Connection failed: " + err.message);
+            }
+        }
+
+        async function runArbitrage() {
+            try {
+                if (!wallet || !wallet.publicKey) {
+                    log("Connect wallet first!");
+                    return;
+                }
+
+                log("Preparing arbitrage transaction...");
+                const transaction = new Transaction().add(
+                    new TransactionInstruction({
+                        keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
+                        programId,
+                        data: Buffer.from([0x01]) // Dummy instruction data
+                    })
+                );
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = wallet.publicKey;
+
+                log("Requesting wallet signature...");
+                const signed = await wallet.signTransaction(transaction);
+                log("Transaction signed—sending...");
+                const txid = await connection.sendRawTransaction(signed.serialize());
+                log("Transaction sent: " + txid);
+                await connection.confirmTransaction(txid);
+                log("Arbitrage executed—check wallet for results!");
+            } catch (err) {
+                log("Arbitrage failed: " + err.message);
             }
         }
 
