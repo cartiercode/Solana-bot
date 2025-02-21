@@ -75,8 +75,8 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const transaction = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
+                const transaction = new Transaction().add(
+                    new TransactionInstruction({
                         keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
