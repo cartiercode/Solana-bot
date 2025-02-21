@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solana Arbitrage dApp</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #logs { white-space: pre-wrap; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Solana Arbitrage dApp</h1>
+    <p>Wallet: <span id="wallet">Not Connected</span></p>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <button onclick="runArbitrage()" id="runBtn" disabled>Run Arbitrage</button>
+    <h2>Logs</h2>
+    <div id="logs"></div>
+
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
+    <script>
+        const { Connection, PublicKey, Transaction, TransactionInstruction } = solanaWeb3;
+        const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
+        let wallet = null;
+
+        async function connectWallet() {
+            try {
+                if (window.solana && window.solana.isPhantom) {
+                    await window.solana.connect();
+                    wallet = window.solana;
+                    document.getElementById("wallet").innerText = wallet.publicKey.toString();
+                    document.getElementById("runBtn").disabled = false;
+                    log("Wallet connected: " + wallet.publicKey.toString());
+                } else {
+                    alert("Please install Phantom Wallet!");
+                }
+            } catch (err) {
+                log("Wallet connection failed: " + err.message);
+            }
+        }
+
+        async function runArbitrage() {
+            if (!wallet) return log("Connect wallet first!");
+            try {
+                log("Checking arbitrage opportunities...");
+                const transaction = new Transaction().add(
+                    new TransactionInstruction({
+                        keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
+                        programId,
+                        data: Buffer.from([]) // Add params if needed
+                    })
+                );
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = wallet.publicKey;
+
+                const signed = await wallet.signTransaction(transaction);
+                const txid = await connection.sendRawTransaction(signed.serialize());
+                log("Transaction sent: " + txid);
+                await connection.confirmTransaction(txid);
+                log("Arbitrage executed—check wallet for results!");
+            } catch (err) {
+                log("Arbitrage failed: " + err.message);
+            }
+        }
+
+        function log(message) {
+            const logs = document.getElementById("logs");
+            logs.innerText += message + "\n";
+            logs.scrollTop = logs.scrollHeight;
+        }
+    </script>
+</body>
+</html>
