@@ -21,7 +21,6 @@
         const { Connection, PublicKey, Transaction, TransactionInstruction } = solanaWeb3;
         const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
-        let wallet = null;
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -43,29 +42,28 @@
                     return;
                 }
 
-                log("Step 3: Disconnecting any existing connection...");
+                log("Step 3: Disconnecting any existing session...");
                 if (window.solana.isConnected) {
                     await window.solana.disconnect();
                     log("Step 4: Disconnected existing session");
                 } else {
-                    log("Step 4: No existing connection to disconnect");
+                    log("Step 4: No existing session to disconnect");
                 }
 
-                log("Step 5: Starting fresh connection...");
+                log("Step 5: Connecting to Phantom...");
                 const connectResult = await window.solana.connect();
                 log("Step 6: Connect result: " + JSON.stringify(connectResult));
 
-                log("Step 7: Assigning wallet...");
-                wallet = window.solana; // Use window.solana post-connect
-                log("Step 8: Wallet assigned: " + (wallet ? "Yes" : "No"));
+                // Skip wallet assignment—use window.solana directly
+                log("Step 7: Skipping wallet var—using window.solana");
 
-                log("Step 9: Checking wallet properties...");
-                if (wallet && wallet.publicKey) {
-                    document.getElementById("wallet").innerText = wallet.publicKey.toString();
+                log("Step 8: Checking window.solana properties...");
+                if (window.solana && window.solana.publicKey) {
+                    document.getElementById("wallet").innerText = window.solana.publicKey.toString();
                     document.getElementById("runBtn").disabled = false;
-                    log("Step 10: Wallet connected: " + wallet.publicKey.toString());
+                    log("Step 9: Wallet connected: " + window.solana.publicKey.toString());
                 } else {
-                    log("Step 10: No publicKey in wallet");
+                    log("Step 9: No publicKey in window.solana");
                 }
             } catch (err) {
                 log("Connection failed: " + err.message + " (Code: " + (err.code || "Unknown") + ")");
@@ -74,24 +72,24 @@
 
         async function runArbitrage() {
             try {
-                if (!wallet || !wallet.publicKey) {
+                if (!window.solana || !window.solana.publicKey) {
                     log("Connect wallet first!");
                     return;
                 }
                 log("Preparing arbitrage transaction...");
                 const transaction = new Transaction().add(
                     new TransactionInstruction({
-                        keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
+                        keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
                     })
                 );
                 const { blockhash } = await connection.getLatestBlockhash();
                 transaction.recentBlockhash = blockhash;
-                transaction.feePayer = wallet.publicKey;
+                transaction.feePayer = window.solana.publicKey;
 
                 log("Requesting Phantom signature...");
-                const signed = await wallet.signTransaction(transaction);
+                const signed = await window.solana.signTransaction(transaction);
                 log("Transaction signed");
                 const txid = await connection.sendRawTransaction(signed.serialize());
                 log("Transaction sent: " + txid);
