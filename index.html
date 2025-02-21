@@ -18,6 +18,26 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
+        // Wait for solanaWeb3 to load
+        function waitForSolanaWeb3() {
+            return new Promise((resolve) => {
+                if (typeof window.solanaWeb3 !== 'undefined' && typeof window.solanaWeb3.Transaction !== 'undefined') {
+                    resolve();
+                } else {
+                    const checkInterval = setInterval(() => {
+                        if (typeof window.solanaWeb3 !== 'undefined' && typeof window.solanaWeb3.Transaction !== 'undefined') {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        resolve(); // Fallback after 2s
+                    }, 2000);
+                }
+            });
+        }
+
         const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
@@ -74,10 +94,9 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                if (typeof window.solanaWeb3 === 'undefined') {
-                    log("solanaWeb3 is undefined!");
-                    throw new Error("solanaWeb3 not loaded");
-                }
+                await waitForSolanaWeb3(); // Ensure solanaWeb3 is loaded
+                log("solanaWeb3 loaded: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
+                log("Transaction available: " + (typeof window.solanaWeb3.Transaction !== 'undefined' ? "Yes" : "No"));
                 if (typeof window.solanaWeb3.Transaction === 'undefined') {
                     log("Transaction class not available—check Brave console!");
                     throw new Error("Transaction class not loaded");
