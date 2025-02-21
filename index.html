@@ -33,24 +33,23 @@
             try {
                 log("Step 1: Checking Phantom availability...");
                 if (typeof window.solana === 'undefined') {
-                    log("No Solana provider found—install Phantom!");
-                    alert("Please install Phantom Wallet!");
+                    log("No Solana provider—install Phantom!");
+                    alert("Install Phantom Wallet!");
                     return;
                 }
-                log("Step 2: Verifying Phantom provider...");
+                log("Step 2: Verifying Phantom...");
                 if (!window.solana.isPhantom) {
-                    log("Solana provider found, but not Phantom!");
+                    log("Not Phantom—use Phantom Wallet!");
                     return;
                 }
 
-                log("Step 3: Initiating Phantom connection...");
+                log("Step 3: Connecting to Phantom...");
                 const connectResult = await window.solana.connect();
-                log("Step 4: Connection result: " + JSON.stringify(connectResult));
+                log("Step 4: Connect result: " + JSON.stringify(connectResult));
 
-                log("Step 5: Setting wallet from connect result...");
-                wallet = connectResult; // Use connect() result directly
-                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
-                log("Step 6: Wallet set: " + (wallet ? "Yes" : "No"));
+                log("Step 5: Before setting wallet...");
+                wallet = window.solana; // Use window.solana, not connectResult
+                log("Step 6: After setting wallet: " + (wallet ? "Yes" : "No"));
 
                 log("Step 7: Checking wallet properties...");
                 if (wallet && wallet.publicKey) {
@@ -58,10 +57,10 @@
                     document.getElementById("runBtn").disabled = false;
                     log("Step 8: Wallet connected: " + wallet.publicKey.toString());
                 } else {
-                    log("Step 8: Wallet object lacks publicKey");
+                    log("Step 8: No publicKey in wallet");
                 }
             } catch (err) {
-                log("Connection failed: " + err.message);
+                log("Connection failed: " + err.message + " (Code: " + (err.code || "Unknown") + ")");
             }
         }
 
@@ -83,13 +82,13 @@
                 transaction.recentBlockhash = blockhash;
                 transaction.feePayer = wallet.publicKey;
 
-                log("Requesting Phantom to sign transaction...");
+                log("Requesting Phantom signature...");
                 const signed = await wallet.signTransaction(transaction);
-                log("Transaction signed successfully");
+                log("Transaction signed");
                 const txid = await connection.sendRawTransaction(signed.serialize());
                 log("Transaction sent: " + txid);
                 await connection.confirmTransaction(txid);
-                log("Arbitrage executed—check wallet for results!");
+                log("Arbitrage executed—check wallet!");
             } catch (err) {
                 log("Arbitrage failed: " + err.message);
             }
