@@ -18,114 +18,97 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Wait for solanaWeb3 to load
-        function waitForSolanaWeb3() {
-            return new Promise((resolve) => {
-                const checkInterval = setInterval(() => {
-                    if (typeof window.solanaWeb3 !== 'undefined' && typeof window.solanaWeb3.Transaction !== 'undefined') {
-                        clearInterval(checkInterval);
-                        resolve();
-                    }
-                }, 100);
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    resolve(); // Fallback after 2s
-                }, 2000);
-            });
+        // Define globals immediately—no delay
+        const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
+
+        function log(message) {
+            const logs = document.getElementById("logs");
+            logs.innerText += message + "\n";
+            logs.scrollTop = logs.scrollHeight;
         }
 
-        // Define globals after load
-        waitForSolanaWeb3().then(() => {
-            const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
-            const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
-
-            function log(message) {
-                const logs = document.getElementById("logs");
-                logs.innerText += message + "\n";
-                logs.scrollTop = logs.scrollHeight;
-            }
-
-            async function connectWallet() {
-                try {
-                    log("Step 1: Checking Phantom...");
-                    if (typeof window.solana === 'undefined') {
-                        log("No Solana provider—install Phantom!");
-                        alert("Install Phantom Wallet!");
-                        return;
-                    }
-                    log("Step 2: Verifying Phantom...");
-                    if (!window.solana.isPhantom) {
-                        log("Not Phantom—use Phantom Wallet!");
-                        return;
-                    }
-
-                    log("Step 3: Disconnecting any existing session...");
-                    if (window.solana.isConnected) {
-                        await window.solana.disconnect();
-                        log("Step 4: Disconnected existing session");
-                    } else {
-                        log("Step 4: No existing session to disconnect");
-                    }
-
-                    log("Step 5: Connecting to Phantom...");
-                    const connectResult = await window.solana.connect();
-                    log("Step 6: Connect result: " + JSON.stringify(connectResult));
-
-                    log("Step 7: Skipping wallet var—using window.solana");
-                    log("Step 8: Checking window.solana properties...");
-                    if (window.solana && window.solana.publicKey) {
-                        document.getElementById("wallet").innerText = window.solana.publicKey.toString();
-                        document.getElementById("runBtn").disabled = false;
-                        log("Step 9: Wallet connected: " + window.solana.publicKey.toString());
-                    } else {
-                        log("Step 9: No publicKey in window.solana");
-                    }
-                } catch (err) {
-                    log("Connection failed: " + err.message + " (Code: " + (err.code || "Unknown") + ")");
+        async function connectWallet() {
+            try {
+                log("Step 1: Connect Wallet clicked...");
+                log("Checking Phantom...");
+                if (typeof window.solana === 'undefined') {
+                    log("No Solana provider—install Phantom!");
+                    alert("Install Phantom Wallet!");
+                    return;
                 }
-            }
-
-            async function runArbitrage() {
-                try {
-                    if (!window.solana || !window.solana.publicKey) {
-                        log("Connect wallet first!");
-                        return;
-                    }
-                    log("Preparing arbitrage transaction...");
-                    if (typeof window.solanaWeb3.Transaction === 'undefined') {
-                        log("Transaction class not available!");
-                        throw new Error("Transaction class not loaded");
-                    }
-                    const transaction = new window.solanaWeb3.Transaction().add(
-                        new window.solanaWeb3.TransactionInstruction({
-                            keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
-                            programId,
-                            data: Buffer.from([0x01])
-                        })
-                    );
-                    const { blockhash } = await connection.getLatestBlockhash();
-                    transaction.recentBlockhash = blockhash;
-                    transaction.feePayer = window.solana.publicKey;
-
-                    log("Requesting Phantom signature...");
-                    const signed = await window.solana.signTransaction(transaction);
-                    log("Transaction signed");
-                    const txid = await connection.sendRawTransaction(signed.serialize());
-                    log("Transaction sent: " + txid);
-                    await connection.confirmTransaction(txid);
-                    log("Arbitrage executed—check wallet!");
-                } catch (err) {
-                    log("Arbitrage failed: " + err.message);
+                log("Verifying Phantom...");
+                if (!window.solana.isPhantom) {
+                    log("Not Phantom—use Phantom Wallet!");
+                    return;
                 }
-            }
 
-            window.addEventListener('load', () => {
-                log("Page loaded—checking Phantom...");
-                log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
-                log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
-                log("solanaWeb3 available: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
-                log("Transaction available: " + (typeof window.solanaWeb3.Transaction !== 'undefined' ? "Yes" : "No"));
-            });
+                log("Disconnecting any existing session...");
+                if (window.solana.isConnected) {
+                    await window.solana.disconnect();
+                    log("Disconnected existing session");
+                } else {
+                    log("No existing session to disconnect");
+                }
+
+                log("Connecting to Phantom...");
+                const connectResult = await window.solana.connect();
+                log("Connect result: " + JSON.stringify(connectResult));
+
+                log("Checking window.solana properties...");
+                if (window.solana && window.solana.publicKey) {
+                    document.getElementById("wallet").innerText = window.solana.publicKey.toString();
+                    document.getElementById("runBtn").disabled = false;
+                    log("Wallet connected: " + window.solana.publicKey.toString());
+                } else {
+                    log("No publicKey in window.solana");
+                }
+            } catch (err) {
+                log("Connection failed: " + err.message + " (Code: " + (err.code || "Unknown") + ")");
+            }
+        }
+
+        async function runArbitrage() {
+            try {
+                if (!window.solana || !window.solana.publicKey) {
+                    log("Connect wallet first!");
+                    return;
+                }
+                log("Preparing arbitrage transaction...");
+                log("solanaWeb3 properties: " + Object.keys(window.solanaWeb3).join(", "));
+                if (typeof window.solanaWeb3.Transaction === 'undefined') {
+                    log("Transaction class not available!");
+                    throw new Error("Transaction class not loaded");
+                }
+                const transaction = new window.solanaWeb3.Transaction().add(
+                    new window.solanaWeb3.TransactionInstruction({
+                        keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
+                        programId,
+                        data: Buffer.from([0x01])
+                    })
+                );
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = window.solana.publicKey;
+
+                log("Requesting Phantom signature...");
+                const signed = await window.solana.signTransaction(transaction);
+                log("Transaction signed");
+                const txid = await connection.sendRawTransaction(signed.serialize());
+                log("Transaction sent: " + txid);
+                await connection.confirmTransaction(txid);
+                log("Arbitrage executed—check wallet!");
+            } catch (err) {
+                log("Arbitrage failed: " + err.message);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            log("Page loaded—checking basics...");
+            log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
+            log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
+            log("solanaWeb3 available: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
+            log("Transaction available: " + (typeof window.solanaWeb3.Transaction !== 'undefined' ? "Yes" : "No"));
         });
     </script>
 </body>
