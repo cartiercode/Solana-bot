@@ -18,9 +18,9 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Use solanaWeb3 directly as global from IIFE
-        const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
-        const programId = new solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
+        // Use window.solanaWeb3 explicitly
+        const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new window.solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -75,8 +75,8 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const transaction = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
+                const transaction = new window.solanaWeb3.Transaction().add(
+                    new window.solanaWeb3.TransactionInstruction({
                         keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
@@ -102,7 +102,7 @@
             log("Page loaded—checking Phantom...");
             log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
             log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
-            log("solanaWeb3 available: " + (typeof solanaWeb3 !== 'undefined' ? "Yes" : "No"));
+            log("solanaWeb3 available: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
         });
     </script>
 </body>
