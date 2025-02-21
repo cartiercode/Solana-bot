@@ -16,7 +16,7 @@
     <h2>Logs</h2>
     <div id="logs"></div>
 
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.66.2/dist/index.iife.min.js"></script>
     <script>
         // Use window.solanaWeb3 explicitly
         const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
@@ -102,7 +102,8 @@
             log("Page loaded—checking Phantom...");
             log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
             log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
-            log("solanaWeb3 available: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
+            log("window.solanaWeb3 available: " + (typeof window.solanaWeb3 !== 'undefined' ? "Yes" : "No"));
+            log("Transaction available: " + (typeof window.solanaWeb3.Transaction !== 'undefined' ? "Yes" : "No"));
         });
     </script>
 </body>
