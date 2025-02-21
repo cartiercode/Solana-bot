@@ -16,8 +16,24 @@
     <h2>Logs</h2>
     <div id="logs"></div>
 
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
+        // Load solanaWeb3 with debug
+        (function() {
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js";
+            script.onload = () => log("solanaWeb3 script loaded successfully");
+            script.onerror = () => {
+                log("solanaWeb3 script failed—trying fallback...");
+                const fallback = document.createElement('script');
+                fallback.src = "https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/dist/index.iife.js";
+                fallback.onload = () => log("Fallback solanaWeb3 script loaded successfully");
+                fallback.onerror = () => log("Fallback solanaWeb3 script failed—check console/network!");
+                document.head.appendChild(fallback);
+            };
+            document.head.appendChild(script);
+        })();
+
+        // Wait for solanaWeb3
         function waitForSolanaWeb3() {
             return new Promise((resolve) => {
                 log("Waiting for solanaWeb3 to load...");
