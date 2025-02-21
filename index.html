@@ -18,8 +18,7 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Explicitly declare solanaWeb3 from window
-        const solanaWeb3 = window.solanaWeb3; // IIFE loads it here
+        // Use solanaWeb3 directly from global scope
         const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
         const programId = new solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
@@ -103,6 +102,7 @@
             log("Page loaded—checking Phantom...");
             log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
             log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
+            log("solanaWeb3 available: " + (typeof solanaWeb3 !== 'undefined' ? "Yes" : "No"));
         });
     </script>
 </body>
