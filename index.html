@@ -12,64 +12,12 @@
     <h1>Solana Arbitrage dApp</h1>
     <p>Wallet: <span id="wallet">Not Connected</span></p>
     <button onclick="connectWallet()">Connect Wallet</button>
-    <button onclick="runArbitrage()" id="runBtn" disabled>Run Arbitrage</button>
     <h2>Logs</h2>
     <div id="logs"></div>
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        const { Connection, PublicKey, Transaction, TransactionInstruction } = solanaWeb3;
-        const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
-        const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
-        let wallet = null; // Global wallet variable
-
-        async function connectWallet() {
-            try {
-                // Ensure Phantom is available
-                if (!window.solana || !window.solana.isPhantom) {
-                    log("Phantom Wallet not detected! Install it from phantom.app");
-                    alert("Please install Phantom Wallet!");
-                    return;
-                }
-
-                // Connect to Phantom
-                const response = await window.solana.connect();
-                wallet = window.solana; // Set global wallet
-                document.getElementById("wallet").innerText = wallet.publicKey.toString();
-                document.getElementById("runBtn").disabled = false;
-                log("Wallet connected: " + wallet.publicKey.toString());
-            } catch (err) {
-                log("Wallet connection failed: " + err.message);
-            }
-        }
-
-        async function runArbitrage() {
-            if (!wallet || !wallet.publicKey) {
-                log("Connect wallet first!");
-                return;
-            }
-            try {
-                log("Checking arbitrage opportunities...");
-                const transaction = new Transaction().add(
-                    new TransactionInstruction({
-                        keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
-                        programId,
-                        data: Buffer.from([]) // Placeholder for now
-                    })
-                );
-                const { blockhash } = await connection.getLatestBlockhash();
-                transaction.recentBlockhash = blockhash;
-                transaction.feePayer = wallet.publicKey;
-
-                const signed = await wallet.signTransaction(transaction);
-                const txid = await connection.sendRawTransaction(signed.serialize());
-                log("Transaction sent: " + txid);
-                await connection.confirmTransaction(txid);
-                log("Arbitrage executed—check wallet for results!");
-            } catch (err) {
-                log("Arbitrage failed: " + err.message);
-            }
-        }
+        let wallet = null;
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -77,13 +25,38 @@
             logs.scrollTop = logs.scrollHeight;
         }
 
-        // Initial check for wallet availability
-        window.addEventListener('load', () => {
-            if (window.solana && window.solana.isPhantom) {
-                log("Phantom Wallet detected—click Connect Wallet to start!");
-            } else {
-                log("Phantom Wallet not found—install it to use the dApp!");
+        async function connectWallet() {
+            try {
+                log("Checking for Phantom...");
+                if (typeof window.solana === 'undefined') {
+                    log("No Solana provider found—install Phantom!");
+                    alert("Please install Phantom Wallet!");
+                    return;
+                }
+                if (!window.solana.isPhantom) {
+                    log("Not Phantom—please use Phantom Wallet!");
+                    return;
+                }
+
+                log("Connecting to Phantom...");
+                await window.solana.connect();
+                wallet = window.solana;
+                log("Wallet object set: " + (wallet ? "Yes" : "No"));
+                if (wallet && wallet.publicKey) {
+                    document.getElementById("wallet").innerText = wallet.publicKey.toString();
+                    log("Wallet connected: " + wallet.publicKey.toString());
+                } else {
+                    log("Wallet connected but no public key found");
+                }
+            } catch (err) {
+                log("Connection failed: " + err.message);
             }
+        }
+
+        window.addEventListener('load', () => {
+            log("Page loaded—checking Phantom...");
+            log("window.solana exists: " + (typeof window.solana !== 'undefined' ? "Yes" : "No"));
+            log("Is Phantom: " + (window.solana && window.solana.isPhantom ? "Yes" : "No"));
         });
     </script>
 </body>
