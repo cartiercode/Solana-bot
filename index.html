@@ -44,20 +44,23 @@
                 }
 
                 log("Step 3: Initiating Phantom connection...");
-                const response = await window.solana.connect();
-                log("Step 4: Connection response received: " + (response ? "Yes" : "No"));
-                wallet = window.solana; // Set global wallet
-                log("Step 5: Wallet object updated: " + (wallet ? "Yes" : "No"));
+                const connectResult = await window.solana.connect();
+                log("Step 4: Connection result: " + (connectResult ? JSON.stringify(connectResult) : "null"));
 
+                log("Step 5: Setting wallet...");
+                wallet = window.solana;
+                log("Step 6: Wallet set: " + (wallet ? "Yes" : "No"));
+
+                log("Step 7: Checking wallet properties...");
                 if (wallet && wallet.publicKey) {
                     document.getElementById("wallet").innerText = wallet.publicKey.toString();
                     document.getElementById("runBtn").disabled = false;
-                    log("Step 6: Wallet connected: " + wallet.publicKey.toString());
+                    log("Step 8: Wallet connected: " + wallet.publicKey.toString());
                 } else {
-                    log("Step 6: Wallet connected but no public key found");
+                    log("Step 8: No publicKey in wallet object");
                 }
             } catch (err) {
-                log("Connection failed at step: " + err.message);
+                log("Connection failed: " + err.message);
             }
         }
 
@@ -72,7 +75,7 @@
                     new TransactionInstruction({
                         keys: [{ pubkey: wallet.publicKey, isSigner: true, isWritable: true }],
                         programId,
-                        data: Buffer.from([0x01]) // Dummy data
+                        data: Buffer.from([0x01])
                     })
                 );
                 const { blockhash } = await connection.getLatestBlockhash();
