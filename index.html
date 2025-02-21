@@ -18,10 +18,10 @@
 
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.js"></script>
     <script>
-        // Define solanaWeb3 explicitly from window
-        const solanaWeb3 = window.solanaWeb3;
-        const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
-        const programId = new solanaWeb3.PublicKey("Your_Program_ID_Here"); // Replace after deploy
+        // Destructure solanaWeb3 correctly
+        const { Connection, PublicKey, Transaction, TransactionInstruction } = window.solanaWeb3;
+        const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+        const programId = new PublicKey("Your_Program_ID_Here"); // Replace after deploy
 
         function log(message) {
             const logs = document.getElementById("logs");
@@ -76,8 +76,8 @@
                     return;
                 }
                 log("Preparing arbitrage transaction...");
-                const transaction = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
+                const transaction = new Transaction().add(
+                    new TransactionInstruction({
                         keys: [{ pubkey: window.solana.publicKey, isSigner: true, isWritable: true }],
                         programId,
                         data: Buffer.from([0x01])
